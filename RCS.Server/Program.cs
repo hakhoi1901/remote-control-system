@@ -82,12 +82,12 @@ namespace RCS.Server
             app.MapHub<AgentHub>("/agenthub");
 
             // Endpoint kiểm tra trạng thái Server (Health Check đơn giản)
-            app.MapGet("/", () => "RCS Server is running...");
+            app.MapGet("/health", () => "RCS Server is running...");
 
             #endregion
 
             // --- RUN APP ---
-            app.Run("http://0.0.0.0:5000");
+            app.Run();
         }
     }
 }

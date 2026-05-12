@@ -2,7 +2,15 @@ import { CONFIG, state } from './config.js';
 import * as Utils from './utils.js';
 import * as Views from './views.js';
 import { startSignalR, sendCommand, requestAgentList } from './network.js';
-import {processInputKey, renderDiskInfo, handleChatMessage, appendMessageToUI } from './utils.js';
+import { 
+    processInputKey, 
+    renderDiskInfo, 
+    handleChatMessage, 
+    appendMessageToUI, 
+    isMobileDevice,   // <-- MỚI
+    loadMobileStyles  // <-- MỚI
+    ,setupMobileKeyboardHandling
+} from './utils.js';
 
 
 let previousObjectUrl = null;
@@ -231,6 +239,26 @@ function handleBinaryStream(imageData, frameSize = 0, senderTicks = 0) {
             }
         }
     }
+
+    if (view === 'remote' && imageData) {
+        const img = document.getElementById('remote-screen-img');
+        const placeholder = document.getElementById('remote-placeholder');
+        const loader = document.getElementById('remote-loader');
+
+        if (img) {
+            // Ẩn màn hình chờ & loading
+            if (placeholder) placeholder.classList.add('hidden');
+            if (loader) loader.classList.add('hidden');
+            
+            // Hiện khung ảnh
+            img.classList.remove('hidden');
+            
+            // Hiển thị dữ liệu ảnh base64
+            img.src = imageData.startsWith('data:') ? imageData : "data:image/jpeg;base64," + imageData;
+        }
+        // Return luôn để không chạy nhầm sang logic webcam
+        return; 
+    }
 }
 
 function updateWebcamStatsDisplay() {
@@ -358,6 +386,9 @@ function switchView(view) {
             break;
         case 'automation': 
             html = Views.renderAutomationLayout(); 
+            break;
+        case 'remote':
+            html = Views.renderRemoteControlLayout();
             break;
         case 'about':
             html = Views.renderAboutLayout();
@@ -857,6 +888,83 @@ function attachViewListeners(view) {
             if(chatBox) chatBox.innerHTML = '<div class="flex justify-center"><span class="text-[10px] text-slate-400 bg-slate-100 px-2 py-1 rounded-full">Đã xóa lịch sử chat</span></div>';
         };
     }
+    else if (view === 'remote') {
+        const btnStart = document.getElementById('remote-start-btn');
+        const btnStop = document.getElementById('remote-stop-btn');
+        const btnFull = document.getElementById('remote-fullscreen-btn');
+        const screenContainer = document.getElementById('remote-screen-container');
+        
+        // Cập nhật UI trạng thái
+        const updateRemoteUI = (isStreaming) => {
+            const dot = document.getElementById('remote-status-dot');
+            const txt = document.getElementById('remote-status-text');
+            const img = document.getElementById('remote-screen-img');
+            const placeholder = document.getElementById('remote-placeholder');
+            const loader = document.getElementById('remote-loader');
+
+            if (isStreaming) {
+                if(dot) dot.className = "w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)] animate-pulse";
+                if(txt) txt.textContent = "Session Active";
+                if(placeholder) placeholder.classList.add('hidden');
+                if(img) img.classList.remove('hidden');
+                // Tắt loader sau 1s (giả lập kết nối xong)
+                if(loader) {
+                    loader.classList.remove('hidden');
+                    setTimeout(() => loader.classList.add('hidden'), 1000);
+                }
+            } else {
+                if(dot) dot.className = "w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600";
+                if(txt) txt.textContent = "Ready to connect";
+                if(placeholder) placeholder.classList.remove('hidden');
+                if(img) img.classList.add('hidden');
+                if(loader) loader.classList.add('hidden');
+            }
+        };
+
+        if (btnStart) {
+            btnStart.onclick = () => {
+                sendCommand('remote_start');
+                state.isRemoteControlling = true; // Lưu trạng thái
+                updateRemoteUI(true);
+            };
+        }
+
+        if (btnStop) {
+            btnStop.onclick = () => {
+                sendCommand('remote_stop');
+                state.isRemoteControlling = false;
+                updateRemoteUI(false);
+            };
+        }
+
+        if (btnFull) {
+            btnFull.onclick = () => {
+                if (!document.fullscreenElement) {
+                    screenContainer.requestFullscreen().catch(err => console.log(err));
+                } else {
+                    document.exitFullscreen();
+                }
+            };
+        }
+
+        // Xử lý gửi sự kiện Chuột & Phím (Chỉ gửi khi đang Connect)
+        if (screenContainer) {
+            // Chuột
+            screenContainer.addEventListener('mousedown', (e) => {
+                if(!state.isRemoteControlling) return;
+                // Tính toán tọa độ và gửi (như logic bài trước)
+                handleRemoteInput(e, 'mouse', screenContainer); 
+            });
+            
+            // Phím (Cần click vào màn hình để focus trước)
+            screenContainer.addEventListener('keydown', (e) => {
+                if(!state.isRemoteControlling) return;
+                e.preventDefault(); // Chặn phím tắt trình duyệt
+                // Gửi mã phím
+                sendCommand('remote_input_key', { keyCode: e.keyCode, isDown: true });
+            });
+        }
+    }
 }
 
 // --- INIT ---
@@ -1038,6 +1146,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         'system': 'Cấu hình Hệ thống',
                         'terminal': 'Terminal',
                         'automation': 'Tương tác',
+                        'remote': 'Remote Desktop Control',
                         'about': 'Giới Thiệu Dự Án'
                     };
                     const view = this.getAttribute('data-view');
@@ -1106,6 +1215,27 @@ document.addEventListener('DOMContentLoaded', () => {
             // Ẩn nút Floating
             showHeaderBtn.classList.add('hidden');
         });
+    }
+    // --- MOBILE DETECTION & SETUP ---
+    if (isMobileDevice()) {
+        console.log("📱 Detected Mobile Environment");
+
+        // 1. Thêm class định danh vào body để CSS dễ dàng override
+        document.body.classList.add('is-mobile');
+
+        // 2. Tải CSS dành riêng cho Mobile
+        loadMobileStyles().then(() => {
+            console.log("✅ Mobile styles loaded");
+        }).catch(err => console.error("Failed to load mobile CSS", err));
+
+        setupMobileKeyboardHandling();
+
+        // 3. Tự động đóng Sidebar khi vào Mobile (mặc định cho gọn)
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar && !sidebar.classList.contains('sidebar-collapsed')) {
+            sidebar.classList.add('sidebar-collapsed', 'w-20');
+            sidebar.classList.remove('w-64');
+        }
     }
 });
 
@@ -1633,3 +1763,39 @@ document.addEventListener('click', (e) => {
         closeAgentDropdown();
     }
 });
+
+
+window.sendRemoteKey = (keyCommand) => {
+    // Gửi lệnh phím đặc biệt (Ctrl+Alt+Del, Win+D,...)
+    sendCommand('remote_key', { key: keyCommand });
+};
+
+function handleRemoteInput(e, type, container) {
+    const img = document.getElementById('remote-screen-img');
+    if (!img) return;
+
+    // Lấy kích thước vị trí ảnh thực tế
+    const rect = img.getBoundingClientRect();
+    
+    // Nếu click ra ngoài ảnh (vùng đen) thì bỏ qua
+    if (e.clientX < rect.left || e.clientX > rect.right || 
+        e.clientY < rect.top || e.clientY > rect.bottom) return;
+
+    // Tính tọa độ bên trong ảnh
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Chuyển sang tỉ lệ % (0.0 đến 1.0)
+    const xRatio = x / rect.width;
+    const yRatio = y / rect.height;
+
+    // Gửi lệnh lên Server (Dùng hàm sendCommand có sẵn trong main.js)
+    if (type === 'mouse') {
+        // Map chuột trái/phải (0: Left, 2: Right)
+        const btnMap = { 0: 'left', 2: 'right' };
+        const btn = btnMap[e.button] || 'left';
+        
+        // Gửi đi
+        sendCommand('remote_input_mouse', { x: xRatio, y: yRatio, btn: btn });
+    }
+}

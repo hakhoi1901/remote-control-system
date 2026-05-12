@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>RCS - Dashboard Điều Khiển</title>
 
     <!-- LOGO -->
@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="css/button.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
-    <!-- Thư viện SignalR (Bắt buộc phải có trước main.js) -->
+    <!-- Thư viện -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.7/signalr.min.js"></script>
 
     
@@ -86,7 +86,6 @@
                     
                     <h2 class="text-4xl font-extrabold text-white leading-tight mb-4">
                         REMOTE CONTROL SYSTEM<br>
-                        <span class="text-blue-200">Powerful & Flexible.</span>
                     </h2>
                     <p class="text-blue-100 text-sm leading-relaxed opacity-90">
                         Hệ thống quản trị và giám sát từ xa mạnh mẽ, đa nền tảng, cung cấp các công cụ cần thiết để theo dõi và điều khiển các thiết bị mục tiêu một cách hiệu quả và an toàn.
@@ -252,6 +251,12 @@
             <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-violet-500 opacity-0 group-[.active]:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
             <i class="fas fa-robot w-8 text-center text-lg text-indigo-500 group-hover:text-indigo-600 group-[.active]:text-white relative z-10 transition-colors"></i>
             <span class="nav-text text-sm font-bold ml-3 text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white group-[.active]:text-white relative z-10 whitespace-nowrap">Tương tác</span>
+        </button>
+
+        <button data-view="remote" class="tab-btn nav-item w-full flex items-center px-3 py-3.5 rounded-2xl transition-all duration-300 group relative overflow-hidden hover:bg-white/60 dark:hover:bg-slate-800/50">
+            <div class="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 opacity-0 group-[.active]:opacity-100 transition-opacity duration-300 rounded-2xl"></div>
+            <i class="fas fa-mouse-pointer w-8 text-center text-lg text-cyan-500 group-hover:text-cyan-600 group-[.active]:text-white relative z-10 transition-colors"></i>
+            <span class="nav-text text-sm font-bold ml-3 text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white group-[.active]:text-white relative z-10 whitespace-nowrap">Remote Control</span>
         </button>
 
         <button data-view="system" class="tab-btn nav-item w-full flex items-center px-3 py-3.5 rounded-2xl transition-all duration-300 group relative overflow-hidden hover:bg-white/60 dark:hover:bg-slate-800/50">

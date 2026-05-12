@@ -1,12 +1,27 @@
-import { getSortIcon, getEmptyRow, getLoadingRow } from './utils.js';
+import { getSortIcon, getEmptyRow, getLoadingRow, isMobileDevice } from './utils.js';
 import { state } from './config.js';
 
-
+// ========================================================================
+// 1. APPLICATIONS VIEW (Đã tách Mobile/Desktop)
+// ========================================================================
 
 export function renderAppLayout() {
+    if (isMobileDevice()) {
+        return renderAppLayoutMobile();
+    }
+    return renderAppLayoutDesktop();
+}
+
+export function updateAppTable(apps) {
+    if (isMobileDevice()) {
+        return updateAppTableMobile(apps);
+    }
+    return updateAppTableDesktop(apps);
+}
+
+function renderAppLayoutDesktop() {
     return `
         <div class="h-full w-full flex flex-col space-y-5">
-            
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0">
                 <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between relative overflow-hidden group">
                     <div class="absolute right-0 top-0 w-24 h-24 bg-blue-500/10 rounded-full -mr-6 -mt-6 transition-transform group-hover:scale-150"></div>
@@ -18,7 +33,6 @@ export function renderAppLayout() {
                         <i class="fas fa-layer-group"></i>
                     </div>
                 </div>
-
                 <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between relative overflow-hidden group">
                     <div class="absolute right-0 top-0 w-24 h-24 bg-green-500/10 rounded-full -mr-6 -mt-6 transition-transform group-hover:scale-150"></div>
                     <div>
@@ -29,7 +43,6 @@ export function renderAppLayout() {
                         <i class="fas fa-bolt"></i>
                     </div>
                 </div>
-
                 <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between relative overflow-hidden group">
                     <div class="absolute right-0 top-0 w-24 h-24 bg-red-500/10 rounded-full -mr-6 -mt-6 transition-transform group-hover:scale-150"></div>
                     <div>
@@ -43,7 +56,6 @@ export function renderAppLayout() {
             </div>
 
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-2 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 shrink-0">
-                
                 <div class="flex-1 flex gap-2">
                     <div class="uiv-search-box flex-1 max-w-md h-10">
                          <svg class="fill-slate-400 dark:fill-slate-500" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg"><path d="M790.588 1468.235c-373.722 0-677.647-303.924-677.647-677.647 0-373.722 303.925-677.647 677.647-677.647 373.723 0 677.647 303.925 677.647 677.647 0 373.723-303.924 677.647-677.647 677.647Zm596.781-160.715c120.396-138.692 193.807-319.285 193.807-516.932C1581.176 354.748 1226.428 0 790.588 0S0 354.748 0 790.588s354.748 790.588 790.588 790.588c197.647 0 378.24-73.411 516.932-193.807l516.028 516.142 79.963-79.963-516.142-516.028Z" fill-rule="evenodd"></path></svg>
@@ -53,7 +65,6 @@ export function renderAppLayout() {
                         <i class="fas fa-sync-alt"></i>
                     </button>
                 </div>
-
                 <div class="flex items-center gap-2 border-l border-slate-200 dark:border-slate-700 pl-4">
                     <div class="relative">
                         <input id="app-search name" type="text" placeholder="Nhập tên / đường dẫn" class="h-10 pl-3 pr-3 w-48 focus:w-64 transition-all bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm outline-none dark:text-white text-slate-700">
@@ -84,7 +95,6 @@ export function renderAppLayout() {
                         </tbody>
                     </table>
                 </div>
-                
                 <div class="bg-slate-50 dark:bg-slate-900 px-6 py-2 border-t border-slate-200 dark:border-slate-700 text-[10px] text-slate-400 flex justify-between items-center">
                     <span>* Dữ liệu được cập nhật từ Registry & Process List</span>
                     <span id="app-footer-count">0 items</span>
@@ -94,7 +104,7 @@ export function renderAppLayout() {
     `;
 }
 
-export function updateAppTable(apps) {
+function updateAppTableDesktop(apps) {
     const tbody = document.getElementById('app-list-body');
     const footerCount = document.getElementById('app-footer-count');
     
@@ -110,7 +120,7 @@ export function updateAppTable(apps) {
         return; 
     }
 
-    // --- 1. TÍNH TOÁN THỐNG KÊ ---
+    // --- TÍNH TOÁN THỐNG KÊ ---
     const total = apps.length;
     const running = apps.filter(a => a.status === 'Running').length;
     const stopped = total - running;
@@ -120,11 +130,10 @@ export function updateAppTable(apps) {
     if (statStopped) statStopped.textContent = stopped;
     if (footerCount) footerCount.textContent = `${total} ứng dụng được tìm thấy`;
 
-    // --- 2. RENDER BẢNG ---
+    // --- RENDER BẢNG ---
     tbody.innerHTML = apps.map(app => {
         const isRunning = app.status === 'Running';
         
-        // Badge trạng thái (giữ nguyên cho đẹp)
         const statusBadge = isRunning 
             ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400 border border-green-200 dark:border-green-500/30">
                  <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 animate-pulse"></span> Running
@@ -133,8 +142,6 @@ export function updateAppTable(apps) {
                  <span class="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5"></span> Stopped
                </span>`;
 
-        // Nút Running (Đỏ): bg-red-50 text-red-600 ...
-        // Nút Stopped (Xanh): bg-green-50 text-green-600 ...
         const btnClass = isRunning 
             ? 'bg-red-50 text-red-600 shadow-red-100 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:shadow-none dark:hover:bg-red-900/40 border border-red-100 dark:border-red-900/30' 
             : 'bg-green-50 text-green-600 shadow-green-200 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:shadow-none dark:hover:bg-green-900/40 border border-green-100 dark:border-green-900/30';
@@ -142,7 +149,6 @@ export function updateAppTable(apps) {
         const btnIcon = isRunning ? 'fa-stop-circle' : 'fa-play-circle';
         const btnText = isRunning ? 'Đóng' : 'Mở';
         const btnAction = isRunning ? 'stop-app' : 'start-app';
-
         const targetId = app.path ? app.path : app.name;
 
         // Icon chữ cái
@@ -152,7 +158,6 @@ export function updateAppTable(apps) {
 
         return `
         <tr class="group hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-all duration-200">
-            
             <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                     <div class="w-10 h-10 rounded-xl ${iconColor} ${textColor} flex items-center justify-center font-bold text-lg shadow-sm mr-4 shrink-0 transition-transform group-hover:scale-110">
@@ -166,7 +171,6 @@ export function updateAppTable(apps) {
                     </div>
                 </div>
             </td>
-
             <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center max-w-xs md:max-w-sm xl:max-w-md group/path cursor-help">
                     <i class="fas fa-folder text-slate-300 dark:text-slate-600 mr-2 group-hover/path:text-yellow-500 transition-colors"></i>
@@ -175,11 +179,9 @@ export function updateAppTable(apps) {
                     </span>
                 </div>
             </td>
-
             <td class="px-6 py-4 whitespace-nowrap text-center">
                 ${statusBadge}
             </td>
-
             <td class="px-6 py-4 whitespace-nowrap text-right">
                 <button data-action="${btnAction}" data-id="${targetId}" class="${btnClass} px-4 py-1.5 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 ml-auto w-24 font-semibold text-sm">
                     <i class="fas ${btnIcon}"></i> ${btnText}
@@ -189,8 +191,179 @@ export function updateAppTable(apps) {
     }).join('');
 }
 
-// --- PROCESS VIEW ---
-export function renderProcessLayout() {
+
+function renderAppLayoutMobile() {
+    return `
+        <div class="h-full flex flex-col bg-[#f8fafc] dark:bg-[#0f172a] relative">
+            
+            <div class="px-5 pt-6 pb-4 bg-white dark:bg-slate-900 rounded-b-[2.5rem] shadow-sm border-b border-slate-100 dark:border-slate-800 z-20 relative">
+                
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Applications</h2>
+                        <p class="text-xs text-slate-400 font-medium mt-0.5">Quản lý phần mềm đã cài đặt</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 shadow-inner">
+                        <i class="fas fa-th-large"></i>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 w-8 h-8 bg-blue-500/10 rounded-bl-full -mr-2 -mt-2"></div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tổng</span>
+                        <span id="stat-app-total" class="text-xl font-black text-slate-700 dark:text-white group-hover:scale-110 transition-transform">0</span>
+                    </div>
+
+                    <div class="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-900/20 dark:to-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30 shadow-sm shadow-emerald-500/5">
+                        <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1">Đang chạy</span>
+                        <span id="stat-app-running" class="text-xl font-black text-emerald-600 dark:text-emerald-400">0</span>
+                    </div>
+
+                    <div class="flex flex-col items-center justify-center p-3 rounded-2xl bg-gradient-to-br from-rose-50 to-rose-100/50 dark:from-rose-900/20 dark:to-rose-900/10 border border-rose-100 dark:border-rose-900/30 shadow-sm shadow-rose-500/5">
+                        <span class="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider mb-1">Đã dừng</span>
+                        <span id="stat-app-stopped" class="text-xl font-black text-rose-600 dark:text-rose-400">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sticky top-0 z-10 px-5 py-3 -mt-4">
+                <div class="backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 p-1.5 rounded-2xl shadow-lg shadow-slate-200/50 dark:shadow-none border border-white/50 dark:border-slate-700 flex gap-2">
+                    <div class="relative flex-1 group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
+                        </div>
+                        <input id="app-search" type="text" placeholder="Tìm tên app..." class="block w-full h-10 pl-10 bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-sm focus:ring-0 text-slate-800 dark:text-white placeholder-slate-400 transition-all">
+                    </div>
+                    
+                    <button id="list-apps-btn" class="w-10 h-10 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/30 flex items-center justify-center active:scale-90 transition-transform">
+                        <i class="fas fa-sync-alt text-xs font-bold"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="app-list-body" class="flex-1 overflow-y-auto px-5 pb-24 space-y-3 custom-scrollbar scroll-smooth">
+                <div class="flex flex-col items-center justify-center py-20 opacity-60">
+                    <div class="w-10 h-10 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Đang tải dữ liệu...</span>
+                </div>
+            </div>
+
+            <div class="fixed bottom-0 left-0 w-full h-16 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-slate-900 dark:via-slate-900/90 pointer-events-none z-20 flex items-end justify-center pb-4">
+                <span id="app-footer-count" class="text-[10px] font-bold text-slate-400 bg-slate-100/80 dark:bg-slate-800/80 px-3 py-1 rounded-full backdrop-blur-md border border-slate-200 dark:border-slate-700 shadow-sm">
+                    0 ứng dụng
+                </span>
+            </div>
+        </div>
+    `;
+}
+
+function updateAppTableMobile(apps) {
+    const container = document.getElementById('app-list-body');
+    const footerCount = document.getElementById('app-footer-count');
+    const statTotal = document.getElementById('stat-app-total');
+    const statRunning = document.getElementById('stat-app-running');
+    const statStopped = document.getElementById('stat-app-stopped');
+
+    if (!container) return;
+
+    // Empty State đẹp mắt
+    if (!apps || apps.length === 0) { 
+        container.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-16 animate-fade-in-up">
+                <div class="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                    <i class="fas fa-box-open text-4xl text-slate-300 dark:text-slate-600"></i>
+                </div>
+                <h3 class="text-slate-600 dark:text-slate-300 font-bold">Không tìm thấy ứng dụng</h3>
+                <p class="text-xs text-slate-400 mt-1 max-w-[200px] text-center">Hãy thử tìm kiếm từ khóa khác hoặc làm mới lại danh sách.</p>
+            </div>`;
+        if(statTotal) statTotal.textContent = '0';
+        return; 
+    }
+
+    // Logic thống kê
+    const total = apps.length;
+    const running = apps.filter(a => a.status === 'Running').length;
+    const stopped = total - running;
+
+    if (statTotal) statTotal.textContent = total;
+    if (statRunning) statRunning.textContent = running;
+    if (statStopped) statStopped.textContent = stopped;
+    if (footerCount) footerCount.textContent = `${total} ứng dụng`;
+
+    // Render Cards Premium
+    container.innerHTML = apps.map((app, index) => {
+        const isRunning = app.status === 'Running';
+        const targetId = app.path ? app.path : app.name;
+        const firstLetter = (app.name || '?').charAt(0).toUpperCase();
+        
+        // Màu sắc động dựa theo trạng thái
+        // Running: Xanh ngọc (Emerald) sang trọng
+        // Stopped: Xám nhạt hiện đại
+        
+        const cardClass = isRunning 
+            ? 'bg-white dark:bg-slate-800 border-l-4 border-l-emerald-500 border-y border-r border-y-slate-100 border-r-slate-100 dark:border-y-slate-700 dark:border-r-slate-700 shadow-md shadow-emerald-500/5' 
+            : 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 opacity-90';
+
+        const iconBg = isRunning
+            ? 'bg-gradient-to-br from-emerald-400 to-teal-600 text-white shadow-lg shadow-emerald-500/30'
+            : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400';
+
+        // Button Action Style
+        const btnClass = isRunning
+            ? 'bg-rose-50 text-rose-600 active:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400'
+            : 'bg-indigo-50 text-indigo-600 active:bg-indigo-100 dark:bg-indigo-900/20 dark:text-indigo-400';
+
+        const btnIcon = isRunning ? 'fa-power-off' : 'fa-play';
+        const statusText = isRunning ? 'Đang chạy' : 'Đã dừng';
+        const statusColor = isRunning ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400';
+
+        // Animation delay staggered (hiệu ứng xuất hiện lần lượt)
+        const delay = index < 10 ? `style="animation-delay: ${index * 0.05}s"` : '';
+
+        return `
+        <div class="rounded-2xl p-4 flex items-center gap-4 relative overflow-hidden transition-all active:scale-[0.98] ${cardClass} animate-fade-in-up" ${delay}>
+            
+            <div class="w-12 h-12 rounded-2xl ${iconBg} flex items-center justify-center font-bold text-xl shrink-0 z-10">
+                ${firstLetter}
+            </div>
+
+            <div class="flex-1 min-w-0 z-10">
+                <h4 class="font-bold text-slate-800 dark:text-white text-[15px] truncate leading-tight mb-1">
+                    ${app.name || 'Unknown App'}
+                </h4>
+                
+                <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-700/50 px-2 py-0.5 rounded-md w-fit">
+                        <span class="w-1.5 h-1.5 rounded-full ${isRunning ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}"></span>
+                        <span class="text-[10px] font-bold uppercase tracking-wider ${statusColor}">
+                            ${statusText}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <button 
+                data-action="${isRunning ? 'stop-app' : 'start-app'}" 
+                data-id="${targetId}" 
+                class="w-10 h-10 rounded-xl ${btnClass} flex items-center justify-center z-10 transition-colors"
+            >
+                <i class="fas ${btnIcon} text-sm"></i>
+            </button>
+
+            ${isRunning ? '<div class="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-emerald-500/5 to-transparent rounded-bl-full -mr-4 -mt-4 z-0 pointer-events-none"></div>' : ''}
+        </div>
+        `;
+    }).join('');
+}
+
+
+// ========================================================================
+// PROCESS VIEW - PERFORMANCE DASHBOARD STYLE
+// ========================================================================
+
+
+export function renderProcessLayoutDesktop() {
     return `
         <div class="space-y-6">
 
@@ -409,7 +582,7 @@ export function renderProcessLayout() {
     `;
 }
 
-export function updateProcessTable(processes) {
+export function updateProcessTableDesktop(processes) {
     const tbody = document.getElementById('process-list-body');
     const TOTAL_SYSTEM_RAM_MB = 16384;
     
@@ -493,6 +666,200 @@ export function updateProcessTable(processes) {
     `).join('');
 }
 
+export function renderProcessLayout() {
+    if (isMobileDevice()) {
+        return renderProcessLayoutMobile();
+    }
+    return renderProcessLayoutDesktop();
+}
+
+export function updateProcessTable(processes) {
+    if (isMobileDevice()) {
+        return updateProcessTableMobile(processes);
+    }
+    return updateProcessTableDesktop(processes); 
+}
+
+function renderProcessLayoutMobile() {
+    return `
+        <div class="h-full flex flex-col bg-[#f8fafc] dark:bg-[#0f172a] relative">
+            
+            <div class="px-5 pt-6 pb-4 bg-white dark:bg-slate-900 rounded-b-[2rem] shadow-sm border-b border-slate-100 dark:border-slate-800 z-20">
+                <div class="flex justify-between items-center mb-5">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Task Manager</h2>
+                        <p class="text-xs text-slate-400 font-medium mt-0.5">Giám sát hiệu năng thời gian thực</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 shadow-inner animate-pulse">
+                        <i class="fas fa-heartbeat text-rose-500"></i>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="bg-blue-50 dark:bg-blue-900/20 p-2.5 rounded-xl border border-blue-100 dark:border-blue-800 flex flex-col items-center justify-center">
+                        <span class="text-[10px] font-bold text-blue-400 uppercase">CPU Load</span>
+                        <span id="mobile-total-cpu" class="text-lg font-black text-blue-600 dark:text-blue-400">0%</span>
+                        <div class="w-full bg-blue-200 dark:bg-blue-800 h-1 rounded-full mt-1">
+                            <div id="mobile-bar-cpu" class="bg-blue-500 h-1 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="bg-purple-50 dark:bg-purple-900/20 p-2.5 rounded-xl border border-purple-100 dark:border-purple-800 flex flex-col items-center justify-center">
+                        <span class="text-[10px] font-bold text-purple-400 uppercase">RAM Used</span>
+                        <span id="mobile-total-mem" class="text-lg font-black text-purple-600 dark:text-purple-400">0 GB</span>
+                        <div class="w-full bg-purple-200 dark:bg-purple-800 h-1 rounded-full mt-1">
+                            <div id="mobile-bar-mem" class="bg-purple-500 h-1 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">Tasks</span>
+                        <span id="mobile-total-count" class="text-lg font-black text-slate-700 dark:text-slate-300">0</span>
+                         <span class="text-[9px] text-slate-400 mt-1">Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sticky top-0 z-10 px-5 py-3 -mt-2">
+                 <div class="backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 p-1.5 rounded-2xl shadow-lg shadow-slate-200/50 dark:shadow-none border border-white/50 dark:border-slate-700 flex gap-2">
+                    <div class="relative flex-1">
+                        <i class="fas fa-search absolute left-3 top-3 text-slate-400 text-xs"></i>
+                        <input id="process-search" type="text" placeholder="Tìm PID hoặc tên..." class="block w-full h-9 pl-9 bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-xs font-medium focus:ring-0 text-slate-800 dark:text-white placeholder-slate-400 transition-all">
+                    </div>
+                    <button id="list-processes-btn" class="w-9 h-9 bg-slate-800 dark:bg-slate-700 text-white rounded-xl shadow-sm flex items-center justify-center active:scale-90 transition-transform">
+                        <i class="fas fa-sync-alt text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="process-list-mobile" class="flex-1 overflow-y-auto px-5 pb-24 space-y-3 custom-scrollbar scroll-smooth">
+                 <div class="flex flex-col items-center justify-center py-20 opacity-60">
+                    <div class="w-8 h-8 border-4 border-slate-200 border-t-blue-500 rounded-full animate-spin mb-4"></div>
+                    <span class="text-xs font-bold text-slate-400 uppercase">Đang đồng bộ...</span>
+                </div>
+            </div>
+
+            <div class="fixed bottom-0 left-0 w-full h-12 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between px-6 text-[10px] font-mono text-slate-500 z-30">
+                <span class="flex items-center gap-2">
+                    <i class="fas fa-hdd text-orange-500"></i> DISK I/O: <b id="mobile-total-disk" class="text-slate-700 dark:text-slate-300">0 KB/s</b>
+                </span>
+                <span class="flex items-center gap-2">
+                     <i class="fas fa-layer-group text-slate-400"></i> Threads: <b id="mobile-total-threads">0</b>
+                </span>
+            </div>
+        </div>
+    `;
+}
+
+function updateProcessTableMobile(processes) {
+    const container = document.getElementById('process-list-mobile');
+    const TOTAL_SYSTEM_RAM_MB = 16384; // Giả lập tổng RAM (hoặc lấy từ config nếu có)
+
+    if (!container) return;
+    if (!processes || processes.length === 0) {
+        container.innerHTML = `<div class="text-center py-10 text-slate-400 italic text-xs">Không có tiến trình nào.</div>`;
+        return;
+    }
+
+    // --- TÍNH TOÁN STATS (Giống Desktop) ---
+    let totalCpu = 0, totalMem = 0, totalThreads = 0;
+    let totalDiskKB = 0;
+
+    processes.forEach(p => {
+        totalCpu += parseFloat(p.cpu?.replace('%', '') || 0);
+        totalMem += parseFloat(p.mem?.replace(/[^\d]/g, '') || 0);
+        totalThreads += (p.threads || 0);
+        
+        let diskVal = 0;
+        let diskStr = p.disk || "0";
+        if (diskStr.includes("MB/s")) diskVal = parseFloat(diskStr) * 1024;
+        else if (diskStr.includes("KB/s")) diskVal = parseFloat(diskStr);
+        totalDiskKB += diskVal;
+    });
+    totalMem *= 0.8; // Hệ số điều chỉnh giống desktop
+
+    // --- UPDATE HEADER UI ---
+    const elCpu = document.getElementById('mobile-total-cpu');
+    const barCpu = document.getElementById('mobile-bar-cpu');
+    const elMem = document.getElementById('mobile-total-mem');
+    const barMem = document.getElementById('mobile-bar-mem');
+    const elCount = document.getElementById('mobile-total-count');
+    const elDisk = document.getElementById('mobile-total-disk');
+    const elThreads = document.getElementById('mobile-total-threads');
+
+    if (elCpu) {
+        elCpu.textContent = `${totalCpu.toFixed(1)}%`;
+        barCpu.style.width = `${Math.min(totalCpu, 100)}%`;
+        // Đổi màu thanh CPU nếu cao quá
+        barCpu.className = totalCpu > 80 
+            ? "bg-red-500 h-1 rounded-full transition-all duration-300" 
+            : "bg-blue-500 h-1 rounded-full transition-all duration-300";
+    }
+    
+    if (elMem) {
+        elMem.textContent = `${(totalMem / 1024).toFixed(1)} GB`;
+        const memPercent = (totalMem / TOTAL_SYSTEM_RAM_MB) * 100;
+        barMem.style.width = `${Math.min(memPercent, 100)}%`;
+    }
+
+    if (elCount) elCount.textContent = processes.length;
+    if (elThreads) elThreads.textContent = totalThreads;
+    
+    if (elDisk) {
+        elDisk.textContent = totalDiskKB > 1024 
+            ? `${(totalDiskKB/1024).toFixed(1)} MB/s` 
+            : `${totalDiskKB.toFixed(0)} KB/s`;
+    }
+
+    // --- RENDER LIST ---
+    container.innerHTML = processes.map((p, index) => {
+        const cpuVal = parseFloat(p.cpu?.replace('%', '') || 0);
+        const memVal = p.mem || '0 MB';
+        
+        // Logic cảnh báo màu sắc
+        const isHighCpu = cpuVal > 50;
+        const isHighMem = parseFloat(memVal) > 500; // > 500MB là nhiều
+
+        const cardBorder = isHighCpu 
+            ? 'border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/10' 
+            : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800';
+
+        const iconColor = isHighCpu
+            ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+            : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400';
+
+        // Animation delay nhẹ
+        const delay = index < 10 ? `style="animation-delay: ${index * 0.03}s"` : '';
+
+        return `
+        <div class="rounded-xl p-3 border ${cardBorder} flex items-center gap-3 shadow-sm animate-fade-in-up transition-colors" ${delay}>
+            
+            <div class="flex flex-col items-center justify-center w-12 h-12 rounded-lg ${iconColor} shrink-0">
+                <i class="fas fa-microchip text-sm mb-0.5"></i>
+                <span class="text-[9px] font-mono font-bold opacity-80">${p.pid}</span>
+            </div>
+
+            <div class="flex-1 min-w-0">
+                <h4 class="font-bold text-slate-800 dark:text-white text-sm truncate" title="${p.name}">${p.name}</h4>
+                <div class="flex items-center gap-3 mt-1.5">
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${isHighCpu ? 'bg-red-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}">
+                        CPU: ${p.cpu}
+                    </span>
+                    <span class="text-[10px] font-mono text-slate-400 dark:text-slate-500 truncate">
+                        RAM: ${memVal}
+                    </span>
+                </div>
+            </div>
+
+            <button 
+                data-action="kill-process" 
+                data-id="${p.pid}" 
+                class="w-9 h-9 rounded-lg bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-400 hover:text-red-500 hover:border-red-200 dark:hover:border-red-800 transition-all active:scale-95 flex items-center justify-center shadow-sm"
+            >
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        `;
+    }).join('');
+}
 // --- OTHER VIEWS ---
 
 export function renderScreenshotView() {
@@ -985,6 +1352,100 @@ export function renderTerminalLayout() {
     `;
 }
 
+// ========================================================================
+// REMOTE DESKTOP VIEW
+// ========================================================================
+
+export function renderRemoteControlLayout() {
+    return `
+        <div class="h-full flex flex-col gap-4 animate-fade-in-up overflow-hidden">
+            
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row justify-between items-center gap-4 shrink-0 transition-colors z-20">
+                
+                <div class="flex items-center gap-4 w-full md:w-auto">
+                    <div class="w-12 h-12 rounded-2xl bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center text-xl shadow-sm border border-cyan-100 dark:border-cyan-800">
+                        <i class="fas fa-mouse-pointer"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 dark:text-white text-base">Remote Desktop</h3>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span id="remote-status-dot" class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                            <p id="remote-status-text" class="text-xs text-slate-500 dark:text-slate-400 font-medium">Ready to connect</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 custom-scrollbar">
+                    
+                    <div class="flex bg-slate-100 dark:bg-slate-700/50 rounded-xl p-1 border border-slate-200 dark:border-slate-600 shrink-0">
+                        <button id="remote-start-btn" class="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-600 hover:text-green-600 dark:hover:text-green-400 hover:shadow-sm transition-all flex items-center gap-2">
+                            <i class="fas fa-link"></i> Kết nối
+                        </button>
+                        <div class="w-px bg-slate-200 dark:bg-slate-600 my-1"></div>
+                        <button id="remote-stop-btn" class="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-600 hover:text-red-500 dark:hover:text-red-400 hover:shadow-sm transition-all flex items-center gap-2">
+                            <i class="fas fa-unlink"></i> Ngắt
+                        </button>
+                    </div>
+
+                    <div class="w-px h-8 bg-slate-200 dark:bg-slate-700 mx-2 shrink-0"></div>
+
+                    <div class="flex gap-2">
+                        <button onclick="window.sendRemoteKey('ctrl-alt-del')" class="px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-500 hover:text-cyan-600 hover:border-cyan-200 dark:hover:border-cyan-800 transition-all shadow-sm text-xs font-bold whitespace-nowrap" title="Gửi tổ hợp phím Ctrl+Alt+Del">
+                            <i class="fas fa-keyboard mr-1"></i> Ctrl+Alt+Del
+                        </button>
+                        
+                        <button onclick="window.sendRemoteKey('win-d')" class="px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-500 hover:text-purple-600 hover:border-purple-200 dark:hover:border-purple-800 transition-all shadow-sm text-xs font-bold whitespace-nowrap" title="Thu nhỏ tất cả cửa sổ">
+                            <i class="fab fa-windows mr-1"></i> Desktop
+                        </button>
+
+                        <button id="remote-fullscreen-btn" class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 text-white hover:bg-slate-700 transition-all shadow-lg shadow-slate-300 dark:shadow-none shrink-0" title="Toàn màn hình">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 bg-slate-900/90 rounded-2xl border-4 border-slate-200 dark:border-slate-700 relative overflow-hidden flex items-center justify-center shadow-inner group select-none outline-none focus:ring-4 focus:ring-cyan-500/30 transition-all" id="remote-screen-container" tabindex="0">
+                
+                <div id="remote-placeholder" class="text-center z-10 p-8">
+                    <div class="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg border border-slate-700 relative">
+                        <div class="absolute inset-0 rounded-full border border-cyan-500/30 animate-ping"></div>
+                        <i class="fas fa-mouse text-4xl text-slate-500"></i>
+                    </div>
+                    <h4 class="text-lg font-bold text-slate-300 mb-2">Remote Control Inactive</h4>
+                    <p class="text-sm text-slate-500 max-w-sm mx-auto leading-relaxed">
+                        Nhấn nút <span class="text-cyan-400 font-bold">"Kết nối"</span> để bắt đầu phiên điều khiển. 
+                        <br>Click chuột vào màn hình để chiếm quyền điều khiển bàn phím.
+                    </p>
+                </div>
+
+                <img id="remote-screen-img" src="" class="hidden max-w-full max-h-full object-contain shadow-2xl" draggable="false" style="cursor: none;" />
+
+                <div id="remote-cursor" class="hidden absolute w-4 h-4 pointer-events-none z-50 transition-transform duration-75 ease-out">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 3L10.07 19.97L12.58 12.58L19.97 10.07L3 3Z" fill="#06B6D4" stroke="white" stroke-width="2"/>
+                    </svg>
+                </div>
+
+                <div id="remote-loader" class="hidden absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center">
+                    <div class="w-12 h-12 border-4 border-slate-700 border-t-cyan-500 rounded-full animate-spin mb-4"></div>
+                    <p class="text-sm font-bold text-cyan-400 animate-pulse">Establishing secure connection...</p>
+                </div>
+
+                <div id="remote-overlay-status" class="absolute top-4 left-4 bg-black/60 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-[10px] font-mono text-white hidden pointer-events-none select-none">
+                    <span class="text-green-400">● LIVE</span> | <span id="remote-res">1920x1080</span> | <span id="remote-ping">-- ms</span>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <p class="text-[10px] text-slate-400 dark:text-slate-500">
+                    <i class="fas fa-info-circle mr-1"></i> 
+                    Nhấn <kbd class="bg-slate-200 dark:bg-slate-700 px-1 rounded font-mono text-slate-700 dark:text-slate-300">Esc</kbd> để thoát chế độ điều khiển bàn phím.
+                </p>
+            </div>
+        </div>
+    `;
+}
 
 export function renderAutomationLayout() {
     return `
@@ -1134,7 +1595,7 @@ function renderTechSpecs() {
                 <div class="flex items-start gap-3">
                     <div class="mt-1"><i class="fas fa-bolt text-yellow-500 text-xs"></i></div>
                     <div>
-                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200">SignalR (WebSocket)</h4>
+                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200">WebSocket</h4>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Dùng cho C&C (Command & Control), Keylogger, Terminal. Đảm bảo tính toàn vẹn dữ liệu.</p>
                     </div>
                 </div>
@@ -1158,27 +1619,27 @@ function renderProjectOverview() {
         <div class="text-center py-20">
             
             <div class="inline-flex items-center justify-center w-28 h-28 rounded-[2.5rem] rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white mb-6 shadow-xl shadow-blue-500/30 transform hover:scale-110 transition-transform duration-500">
-    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-<style>
-    .st_dynamic_stroke {
-        fill: none;
-        stroke: #FFFFFF;
-        stroke-width: 5;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-    }
-    .st_dynamic_fill {
-        fill: #FFFFFF;
-    }
-</style>
-<g>
-    <path class="st_dynamic_stroke" d="M12,44 A 23,23 0 1,1 48,47"/>
-    <polygon class="st_dynamic_fill" points="52,44 40,36 44,54 "/>
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+                <style>
+                    .st_dynamic_stroke {
+                        fill: none;
+                        stroke: #FFFFFF;
+                        stroke-width: 5;
+                        stroke-linecap: round;
+                        stroke-linejoin: round;
+                    }
+                    .st_dynamic_fill {
+                        fill: #FFFFFF;
+                    }
+                </style>
+                <g>
+                    <path class="st_dynamic_stroke" d="M12,44 A 23,23 0 1,1 48,47"/>
+                    <polygon class="st_dynamic_fill" points="52,44 40,36 44,54 "/>
 
-    <line class="st_dynamic_stroke" x1="32" y1="32" x2="50" y2="50"/>
-    <polygon class="st_dynamic_fill" points="54,54 38,52 52,38 "/>
-</g>
-</svg>
+                    <line class="st_dynamic_stroke" x1="32" y1="32" x2="50" y2="50"/>
+                    <polygon class="st_dynamic_fill" points="54,54 38,52 52,38 "/>
+                </g>
+            </svg>
             </div>
             
             <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight leading-tight">
@@ -1707,7 +2168,7 @@ function getGuideData() {
             icon: 'fa-video',
             color: 'text-rose-500',
             title: 'Webcam Streaming',
-            desc: 'Truyền tải Video thời gian thực qua giao thức lai UDP/SignalR.',
+            desc: 'Truyền tải Video thời gian thực qua giao thức lai UDP.',
             content: `
                 <div class="space-y-6">
                     

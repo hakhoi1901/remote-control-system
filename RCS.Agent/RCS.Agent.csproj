@@ -1,14 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <!-- QUAN TRỌNG: Thêm đuôi -windows vào đây để sửa lỗi NETSDK1136 -->
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
+    <Nullable>enable</Nullable>
     
-    <!-- Bắt buộc dòng này để dùng thư viện chụp màn hình -->
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 

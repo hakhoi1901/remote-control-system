@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
-// File: SignalRClient.cs
-// Role: Định tuyến giao tiếp giữa Agent và Server thông qua SignalR.
+// File: Client.cs
+// Role: Định tuyến giao tiếp giữa Agent và Server thông qua .
 //
 // Chịu trách nhiệm:
 //      1. Giữ kết nối (Connection Keep-Alive).
@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace RCS.Agent.Services
 {
-    public class SignalRClient
+    public class Client
     {
         #region --- FIELDS & EVENTS ---
 
@@ -35,11 +35,11 @@ namespace RCS.Agent.Services
 
         #region --- INITIALIZATION (KHỞI TẠO) ---
 
-        public SignalRClient(string serverUrl)
+        public Client(string serverUrl)
         {
             _serverUrl = serverUrl;
 
-            // 1. Cấu hình kết nối SignalR
+            // 1. Cấu hình kết nối 
             _connection = new HubConnectionBuilder()
                 .WithUrl(_serverUrl)
                 .WithAutomaticReconnect() // Quan trọng: Tự động thử kết nối lại nếu mạng chập chờn
@@ -54,6 +54,16 @@ namespace RCS.Agent.Services
                     // Delegate việc xử lý cho lớp bên trên (Agent) thông qua Event
                     await OnCommandReceived.Invoke(cmd);
                 }
+            });
+
+            _connection.On<double, double, string>("ReceiveMouseCommand", (x, y, action) => 
+            {
+                RemoteControlService.SimulateMouse(x, y, action);
+            });
+
+            _connection.On<int, bool>("ReceiveKeyCommand", (keyCode, isDown) => 
+            {
+                RemoteControlService.SimulateKey(keyCode, isDown);
             });
         }
 
@@ -71,7 +81,7 @@ namespace RCS.Agent.Services
             {
                 // Bắt đầu bắt tay (Handshake) với Server
                 await _connection.StartAsync();
-                Console.WriteLine($"[SignalR] Connected to {_serverUrl}");
+                Console.WriteLine($"[] Connected to {_serverUrl}");
 
                 // Sau khi kết nối thành công, gửi ngay gói tin đăng ký để Server biết mình là ai
                 // ProtocolConstants.RegisterAgent là tên hàm trên Server Hub
@@ -80,7 +90,7 @@ namespace RCS.Agent.Services
             catch (Exception ex)
             {
                 // Nếu Server chưa bật hoặc sai URL
-                Console.WriteLine($"[SignalR] Connection Failed: {ex.Message}");
+                Console.WriteLine($"[] Connection Failed: {ex.Message}");
             }
         }
 
@@ -120,7 +130,7 @@ namespace RCS.Agent.Services
         {
             if (_connection.State == HubConnectionState.Connected)
             {
-                // Lưu ý: Dữ liệu base64 có thể rất lớn, cần đảm bảo SignalR Server đã cấu hình MaxMessageSize đủ lớn
+                // Lưu ý: Dữ liệu base64 có thể rất lớn, cần đảm bảo  Server đã cấu hình MaxMessageSize đủ lớn
                 await _connection.InvokeAsync(ProtocolConstants.SendBinaryStream, base64Data);
             }
         }

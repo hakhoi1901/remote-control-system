@@ -1,5 +1,42 @@
 import { state } from './config.js';
 
+
+// FILE: Public/Js/utils.js
+
+/**
+ * Kiểm tra xem thiết bị hiện tại có phải là Mobile/Tablet không.
+ * Tiêu chí:
+ * 1. UserAgent chứa từ khóa mobile.
+ * 2. Hoặc màn hình nhỏ hơn 768px VÀ có hỗ trợ cảm ứng (maxTouchPoints > 0).
+ */
+export function isMobileDevice() {
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    
+    // Kiểm tra thêm cho chắc chắn (trường hợp iPadOS mới thường giả dạng Desktop)
+    const isTouchScreen = (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
+    const isSmallScreen = window.innerWidth <= 1024; // Tính cả Tablet chiều dọc
+
+    return isMobileUA || (isTouchScreen && isSmallScreen);
+}
+
+/**
+ * Hàm nạp CSS động (Lazy load)
+ * Chỉ tải file CSS mobile khi cần thiết để tiết kiệm băng thông cho Desktop.
+ */
+export function loadMobileStyles() {
+    return new Promise((resolve, reject) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = './css/mobile.css'; // File này ta sẽ tạo ở bước sau
+        link.id = 'mobile-theme-style';
+        link.onload = resolve;
+        link.onerror = reject;
+        document.head.appendChild(link);
+    });
+}
+
+
 // --- UI HELPERS ---
 
 export function updateStatus(msg, type) {
@@ -305,4 +342,74 @@ export function appendMessageToUI(sender, message, time, type) {
     chatBox.insertAdjacentHTML('beforeend', bubbleHtml);
     // Cuộn xuống đáy
     chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+
+// FILE: Public/Js/utils.js
+
+/**
+ * Thiết lập logic tự động ẩn Bottom Bar khi bàn phím ảo hiện lên.
+ * Nguyên lý: Lắng nghe sự kiện focus/blur trên các ô input.
+ */
+export function setupMobileKeyboardHandling() {
+    if (!isMobileDevice()) return;
+
+    const body = document.body;
+    
+    // Các loại thẻ kích hoạt bàn phím ảo
+    const inputSelector = 'input[type="text"], input[type="password"], input[type="number"], textarea';
+
+    // Khi bàn phím hiện (Focus vào input)
+    document.addEventListener('focusin', (e) => {
+        if (e.target.matches(inputSelector)) {
+            body.classList.add('keyboard-active');
+        }
+    });
+
+    // Khi bàn phím ẩn (Blur khỏi input)
+    document.addEventListener('focusout', (e) => {
+        if (e.target.matches(inputSelector)) {
+            // Delay nhẹ để tránh giật cục nếu người dùng chuyển focus giữa các input
+            setTimeout(() => {
+                // Kiểm tra lại xem có đang focus vào input khác không
+                const activeElement = document.activeElement;
+                if (!activeElement || !activeElement.matches(inputSelector)) {
+                    body.classList.remove('keyboard-active');
+                }
+            }, 100);
+        }
+    });
+}
+
+
+// Hàm tính toán tọa độ chuột (Tỉ lệ %) để gửi đi
+function handleRemoteInput(e, type, container) {
+    const img = document.getElementById('remote-screen-img');
+    if (!img) return;
+
+    const rect = img.getBoundingClientRect();
+    
+    // Chỉ xử lý khi click vào trong ảnh
+    if (e.clientX < rect.left || e.clientX > rect.right || 
+        e.clientY < rect.top || e.clientY > rect.bottom) return;
+
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Chuyển sang tỉ lệ 0.0 - 1.0
+    const xRatio = x / rect.width;
+    const yRatio = y / rect.height;
+
+    // Gửi lệnh
+    // action map với bên Server
+    if (type === 'mouse') {
+        const btnMap = { 0: 'left', 2: 'right' };
+        const btn = btnMap[e.button] || 'left';
+        
+        // Gọi hàm gửi lệnh từ main.js (hoặc import sendCommand)
+        // Ở đây giả sử gọi qua window hoặc biến global
+        if(window.sendCommand) {
+             window.sendCommand('remote_input_mouse', { x: xRatio, y: yRatio, btn: btn });
+        }
+    }
 }

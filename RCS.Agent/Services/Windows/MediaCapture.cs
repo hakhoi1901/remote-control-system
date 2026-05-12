@@ -15,7 +15,10 @@ using OpenCvSharp;
 
 namespace RCS.Agent.Services.Windows
 {
-    public class MediaCapture : IDisposable
+
+
+    
+        public class MediaCapture : IDisposable
     {
         #region --- CONFIGURATION & CONSTANTS ---
 

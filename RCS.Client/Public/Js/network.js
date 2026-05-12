@@ -39,6 +39,15 @@ export function startSignalR(url, username, password, callbacks) {
                 callbacks.onChatMessage(sender, message, time);
             }
         });
+
+        // Gắn các callback
+        state.connection.on("ReceiveResponse", callbacks.onResponse);
+        state.connection.on("ReceiveUpdate", callbacks.onUpdate);
+        state.connection.on("ReceiveBinaryChunk", callbacks.onBinary); // Cái này của Webcam
+
+        // --- [THÊM DÒNG NÀY VÀO] ---
+        // Lắng nghe sự kiện nhận ảnh màn hình Remote Desktop
+        state.connection.on("ReceiveScreenFrame", callbacks.onBinary);
     });
 }
 

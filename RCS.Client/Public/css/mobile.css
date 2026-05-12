@@ -1,0 +1,223 @@
+
+
+/* FILE: Public/css/mobile.css */
+
+/* Chỉ áp dụng khi body có class .is-mobile */
+body.is-mobile {
+    font-size: 14px; /* Giảm size chữ cơ bản */
+    overflow-x: hidden; /* Chặn cuộn ngang tuyệt đối */
+}
+body.is-mobile.dark {
+    background-color: #0f172a;
+}
+
+/* Ẩn thanh cuộn nhưng vẫn cuộn được (Tăng thẩm mỹ cho Mobile) */
+body.is-mobile ::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+
+/* Tối ưu vùng chạm cho các nút bấm */
+body.is-mobile button, 
+body.is-mobile .nav-item {
+    min-height: 44px; /* Chuẩn Apple HIG cho vùng chạm */
+}
+
+/* Ẩn các thành phần Desktop không cần thiết tạm thời */
+/* --- BOTTOM NAVIGATION BAR (Biến đổi từ Sidebar) --- */
+body.is-mobile #sidebar {
+    /* Vị trí & Layout */
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    top: auto !important; /* Hủy thuộc tính top của Desktop */
+    width: 100% !important;
+    height: calc(65px + env(safe-area-inset-bottom)) !important; /* Chiều cao + Tai thỏ đáy iPhone */
+    
+    /* Flexbox ngang */
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: space-between; /* Dàn đều các item */
+    
+    /* Giao diện */
+    margin: 0 !important;
+    border-radius: 20px 20px 0 0 !important; /* Bo tròn 2 góc trên */
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px); /* Hiệu ứng kính mờ */
+    border-top: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    z-index: 9999;
+    
+    /* Padding an toàn */
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Dark Mode cho Bottom Bar */
+body.is-mobile.dark #sidebar {
+    background: rgba(15, 23, 42, 0.98);
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+
+/* ẨN KHI BÀN PHÍM BẬT (Class này sẽ do JS thêm vào) */
+body.is-mobile.keyboard-active #sidebar {
+    transform: translateY(100%); /* Trượt xuống dưới để ẩn */
+    transition: transform 0.3s ease-in-out;
+}
+
+/* --- ẨN CÁC THÀNH PHẦN DESKTOP THỪA --- */
+/* Logo, Tiêu đề nhóm (Giám sát, Điều khiển), Footer User Info */
+body.is-mobile #sidebar > div:first-child, 
+body.is-mobile #sidebar > div:last-child,
+body.is-mobile .nav-section-title,
+body.is-mobile #sidebar p.nav-text, 
+body.is-mobile #sidebar .h-px {
+    display: none !important;
+}
+
+/* --- CẤU TRÚC CƠ BẢN --- */
+body.is-mobile {
+    padding-bottom: 80px; /* Chừa chỗ cho Bottom Bar để nội dung không bị che */
+    background-color: #f8fafc; /* Màu nền sáng nhẹ cho mobile */
+}
+
+body.is-mobile.dark {
+    background-color: #0f172a;
+}
+
+/* --- BIẾN HÌNH SIDEBAR THÀNH BOTTOM BAR --- */
+body.is-mobile #sidebar {
+    /* Vị trí cố định ở đáy */
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    top: auto !important; /* Hủy thuộc tính top của desktop */
+    
+    /* Kích thước */
+    width: 100vw !important; /* Full chiều rộng */
+    height: 70px !important; /* Chiều cao cố định */
+    margin: 0 !important;
+    border-radius: 20px 20px 0 0 !important; /* Bo tròn 2 góc trên */
+    
+    /* Layout Flexbox nằm ngang */
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: space-around; /* Chia đều khoảng cách các icon */
+    
+    /* Trang trí */
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+    border: none;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    z-index: 9999;
+    
+    /* Xử lý an toàn cho iPhone đời mới (không bị che bởi thanh Home ảo) */
+    padding-bottom: env(safe-area-inset-bottom);
+    height: calc(70px + env(safe-area-inset-bottom)) !important;
+}
+
+/* Chế độ tối cho Bottom Bar */
+body.is-mobile.dark #sidebar {
+    background: rgba(15, 23, 42, 0.95);
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+/* --- ẨN CÁC PHẦN TỬ THỪA CỦA DESKTOP --- */
+/* Ẩn Logo to đùng và nút Toggle Sidebar */
+body.is-mobile #sidebar > div:first-child, /* Header chứa Logo */
+body.is-mobile #sidebar > div:last-child,  /* Footer chứa User Info */
+body.is-mobile .nav-section-title,         /* Tiêu đề nhóm (GIÁM SÁT, ĐIỀU KHIỂN...) */
+body.is-mobile #sidebar p.nav-text         /* Các dòng text phân loại nhỏ */
+{
+    display: none !important;
+}
+
+/* --- TÙY BIẾN THANH NAV (SCROLL NGANG) --- */
+body.is-mobile #sidebar nav {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important; /* Cho phép cuộn ngang nếu nhiều icon */
+    overflow-y: hidden !important;
+    width: 100%;
+    padding: 0 10px;
+    gap: 5px;
+    
+    /* Ẩn thanh cuộn xấu xí */
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+body.is-mobile #sidebar nav::-webkit-scrollbar {
+    display: none;
+}
+
+/* --- ITEM (NÚT BẤM) --- */
+body.is-mobile .nav-item {
+    flex: 0 0 auto; /* Không co giãn, giữ kích thước gốc */
+    width: 60px !important; /* Chiều rộng mỗi nút */
+    height: 50px !important;
+    flex-direction: column !important; /* Icon trên, chữ dưới */
+    justify-content: center;
+    padding: 0 !important;
+    background: transparent !important; /* Bỏ nền xám của desktop */
+    margin-top: 10px;
+    border-radius: 12px;
+}
+
+/* Icon */
+body.is-mobile .nav-item i {
+    font-size: 20px !important;
+    margin-bottom: 4px;
+    width: auto !important;
+}
+
+/* Chữ bên dưới icon */
+body.is-mobile .nav-item .nav-text {
+    display: block !important; /* Hiện lại chữ nhưng nhỏ */
+    font-size: 9px !important;
+    margin-left: 0 !important;
+    font-weight: 600;
+    opacity: 0.7;
+}
+
+/* Hiệu ứng Active (Đang chọn) */
+body.is-mobile .nav-item.active {
+    color: #2563eb !important; /* Màu xanh */
+}
+body.is-mobile .nav-item.active i {
+    transform: translateY(-2px);
+    color: #2563eb !important;
+}
+body.is-mobile .nav-item.active .nav-text {
+    color: #2563eb !important;
+    opacity: 1;
+}
+/* Ẩn cái nền gradient của desktop đi */
+body.is-mobile .nav-item .absolute {
+    display: none !important;
+}
+
+/* --- CHỈNH LẠI MAIN CONTENT --- */
+body.is-mobile #app {
+    flex-direction: column; /* Xếp dọc */
+}
+
+body.is-mobile main {
+    margin-left: 0 !important; /* Bỏ margin trái do sidebar cũ */
+    width: 100% !important;
+    border-radius: 0 !important; /* Bỏ bo góc của khung main */
+}
+
+/* --- HEADER TRÊN CÙNG --- */
+body.is-mobile #main-header {
+    margin: 10px !important;
+    width: calc(100% - 20px) !important;
+    padding: 0 15px !important;
+    height: 60px !important;
+}
+
+body.is-mobile #page-title span {
+    font-size: 16px; /* Giảm size chữ tiêu đề */
+}

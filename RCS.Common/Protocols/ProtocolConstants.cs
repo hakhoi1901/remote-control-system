@@ -53,5 +53,14 @@ namespace RCS.Common.Protocols
         public const string ActionShowMessageBox = "interact_msgbox"; // Hiện thông báo
         public const string ActionTextToSpeech = "interact_tts";      // Phát âm thanh
         public const string ActionRunMacro = "interact_macro";        // Chạy kịch bản
+
+        // --- NHÓM ĐIỀU KHIỂN TỪ XA (REMOTE CONTROL) ---
+        public const string ActionRemoteStart = "remote_start";
+        public const string ActionRemoteStop = "remote_stop";
+        public const string ActionRemoteMouse = "remote_input_mouse"; // Khớp với main.js
+        public const string ActionRemoteKey = "remote_input_key";     // Khớp với main.js
+        
+        // Sự kiện gửi ảnh về (Khớp với network.js dòng state.connection.on("ReceiveScreenFrame"...))
+        public const string ActionScreenFrame = "ReceiveScreenFrame";
     }
 }

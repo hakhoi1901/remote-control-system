@@ -1089,8 +1089,8 @@ function doLogin(username, password) {
         
         Utils.updateStatus("Đã kết nối an toàn", "success");
         
-        // Lưu IP lại
-        localStorage.setItem('saved_server_ip', serverIp);
+        // Lưu địa chỉ đã nhập (hoặc domain hiện tại) lại
+        localStorage.setItem('saved_server_ip', ipInput || window.location.origin);
 
         const loginScreen = document.getElementById('login-screen');
         const appScreen = document.getElementById('app');

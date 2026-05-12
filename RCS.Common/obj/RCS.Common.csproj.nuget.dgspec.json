@@ -1,24 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Code\\MMT\\RCS\\RCS.Common\\RCS.Common.csproj": {}
+    "D:\\Code\\01_University\\2526-HK1\\MMT\\RCS\\RCS.Common\\RCS.Common.csproj": {}
   },
   "projects": {
-    "D:\\Code\\MMT\\RCS\\RCS.Common\\RCS.Common.csproj": {
+    "D:\\Code\\01_University\\2526-HK1\\MMT\\RCS\\RCS.Common\\RCS.Common.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Code\\MMT\\RCS\\RCS.Common\\RCS.Common.csproj",
+        "projectUniqueName": "D:\\Code\\01_University\\2526-HK1\\MMT\\RCS\\RCS.Common\\RCS.Common.csproj",
         "projectName": "RCS.Common",
-        "projectPath": "D:\\Code\\MMT\\RCS\\RCS.Common\\RCS.Common.csproj",
+        "projectPath": "D:\\Code\\01_University\\2526-HK1\\MMT\\RCS\\RCS.Common\\RCS.Common.csproj",
         "packagesPath": "C:\\Users\\Hakhoi\\.nuget\\packages\\",
-        "outputPath": "D:\\Code\\MMT\\RCS\\RCS.Common\\obj\\",
+        "outputPath": "D:\\Code\\01_University\\2526-HK1\\MMT\\RCS\\RCS.Common\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\Hakhoi\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"
+          "D:\\Code\\01_University\\2526-HK1\\MMT\\RCS\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -62,7 +58,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.416/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.420/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

@@ -3,39 +3,48 @@ title RCS BUILD TOOL
 color 0B
 
 echo ==============================================
-echo   DANG BUILD PROJECT RCS VAO FOLDER: RCS_Output
+echo   BUILDING RCS PROJECT (PORTABLE MODE)
 echo ==============================================
 
-:: --- BƯỚC 1: Dọn dẹp bản build cũ ---
-if exist "RCS_Output" (
-    echo [INFO] Dang xoa ban build cu...
-    rmdir /s /q "RCS_Output"
-)
-mkdir "RCS_Output"
+:: Move to project root
+cd /d "%~dp0.."
 
-:: --- BƯỚC 2: Build Server ---
-echo.
-echo [1/3] Dang Build RCS Server...
-:: Xuất ra RCS_Output/Server
-dotnet publish "RCS.Server/RCS.Server.csproj" -c Release -r win-x64 --self-contained true -o "RCS_Output/Server"
+:: STEP 1: Clean old build and temp files
+echo [INFO] Cleaning up...
+if exist "SCRIPT\RCS_Output" rmdir /s /q "SCRIPT\RCS_Output"
+mkdir "SCRIPT\RCS_Output"
 
-:: --- BƯỚC 3: Copy Web Client vào trong Server ---
+:: STEP 2: Build Server
 echo.
-echo [2/3] Dang tich hop Web Client...
-:: Tạo thư mục wwwroot
-if not exist "RCS_Output\Server\wwwroot" mkdir "RCS_Output\Server\wwwroot"
-:: Copy từ RCS.Client/Public vào
-xcopy /E /I /Y "RCS.Client\Public\*" "RCS_Output\Server\wwwroot\"
+echo [1/3] Building RCS Server...
+dotnet publish "RCS.Server\RCS.Server.csproj" -c Release -o "SCRIPT\RCS_Output\Server" --configfile NuGet.Config --ignore-failed-sources /p:UseAppHost=false
+if %ERRORLEVEL% neq 0 goto :ERROR
 
-:: --- BƯỚC 4: Build Agent ---
+:: STEP 3: Copy Web Client assets
 echo.
-echo [3/3] Dang Build RCS Agent...
-:: Xuất ra RCS_Output/Agent
-dotnet publish "RCS.Agent/RCS.Agent.csproj" -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o "RCS_Output/Agent"
+echo [2/3] Integrating Web Client...
+if not exist "SCRIPT\RCS_Output\Server\wwwroot" mkdir "SCRIPT\RCS_Output\Server\wwwroot"
+xcopy /E /I /Y "RCS.Client\Public\*" "SCRIPT\RCS_Output\Server\wwwroot\"
+if %ERRORLEVEL% neq 0 goto :ERROR
+
+:: STEP 4: Build Agent
+echo.
+echo [3/3] Building RCS Agent...
+dotnet publish "RCS.Agent\RCS.Agent.csproj" -c Release -o "SCRIPT\RCS_Output\Agent" --configfile NuGet.Config --ignore-failed-sources /p:UseAppHost=false
+if %ERRORLEVEL% neq 0 goto :ERROR
 
 echo.
 echo ==============================================
-echo   BUILD THANH CONG!
-echo   Output tai: RCS/RCS_Output
+echo   BUILD SUCCESSFUL! (Portable Mode)
+echo   Run with START_SYSTEM.bat
 echo ==============================================
 pause
+exit /b 0
+
+:ERROR
+echo.
+echo ==============================================
+echo   BUILD FAILED! Please check the errors above.
+echo ==============================================
+pause
+exit /b 1

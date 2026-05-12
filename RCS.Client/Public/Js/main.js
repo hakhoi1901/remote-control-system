@@ -978,16 +978,21 @@ function doLogin(username, password) {
     // SỬA LỖI: Xóa dấu phẩy thừa ở đây
     const ipInput = document.getElementById("server-ip").value.trim(); 
     
-    // Nếu để trống thì mặc định localhost
-    let serverIp = ipInput || window.location.hostname;
+    // LOGIC URL THÔNG MINH
     let dynamicUrl;
 
-    if (serverIp.startsWith("http://") || serverIp.startsWith("https://")) {
-        dynamicUrl = serverIp.trimEnd('/') + "/clienthub";
+    if (!ipInput) {
+        // 1. Nếu để trống -> Dùng chính URL đang mở trên trình duyệt (Render hoặc localhost)
+        dynamicUrl = window.location.origin + "/clienthub";
+    } else if (ipInput.startsWith("http://") || ipInput.startsWith("https://")) {
+        // 2. Nếu nhập full URL (vd: https://abc.onrender.com)
+        dynamicUrl = ipInput.trimEnd('/') + "/clienthub";
     } else {
-        // Nếu là IP/localhost thuần túy
-        dynamicUrl = `http://${serverIp}:5000/clienthub`;
+        // 3. Nếu nhập IP hoặc Hostname thuần (vd: 192.168.1.5 hoặc localhost) -> Thêm port 5000
+        dynamicUrl = `http://${ipInput}:5000/clienthub`;
     }
+
+    console.log("📡 Connecting to Hub:", dynamicUrl);
 
     btnText.textContent = "Đang xác thực...";
     btnLoader.classList.remove('hidden');
@@ -1195,11 +1200,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutBtn = document.getElementById('logout-btn');
     if(logoutBtn) logoutBtn.addEventListener('click', doLogout);
     
-    // Tự động điền IP cũ
+    // Tự động điền IP cũ hoặc IP hiện tại
     const savedIp = localStorage.getItem('saved_server_ip');
-    if (savedIp) {
-        const ipField = document.getElementById('server-ip');
-        if(ipField) ipField.value = savedIp;
+    const ipField = document.getElementById('server-ip');
+    if (ipField) {
+        if (savedIp) {
+            ipField.value = savedIp;
+        } else {
+            // Nếu lần đầu mở, tự điền domain hiện tại (vd: https://abc.onrender.com)
+            ipField.value = window.location.origin;
+        }
     }
 
     const header = document.getElementById('main-header');

@@ -9,6 +9,10 @@ echo ==============================================
 :: Move to project root
 cd /d "%~dp0.."
 
+:: Kill any running dotnet processes to unlock files
+echo [INFO] Unlocking files...
+taskkill /F /IM dotnet.exe 2>nul
+
 :: STEP 1: Clean old build and temp files
 echo [INFO] Cleaning up...
 if exist "SCRIPT\RCS_Output" rmdir /s /q "SCRIPT\RCS_Output"

@@ -80,61 +80,55 @@ namespace RCS.Agent
 
             // --- LOGIC XÁC ĐỊNH IP SERVER (LOGIN LOGIC) ---
 
-            // Trường hợp 1: Có tham số dòng lệnh (vd: Agent.exe 192.168.1.50)
-            if (args.Length > 0 && IPAddress.TryParse(args[0], out _))
+            // Lấy Server Host từ tham số hoặc input
+            string serverHost;
+            if (args.Length > 0)
             {
-                CURRENT_SERVER_IP = args[0];
-                Console.WriteLine($"[Config] Auto-detected IP from args: {CURRENT_SERVER_IP}");
+                serverHost = args[0];
+                Console.WriteLine($"[Config] Auto-detected Server: {serverHost}");
             }
-            // Trường hợp 2: Không có tham số -> Hỏi người dùng
             else
             {
-                Console.Write($"Enter Server IP (Default: {DEFAULT_SERVER_HOST}): ");
+                Console.Write($"Enter Server IP or URL (Default: {DEFAULT_SERVER_HOST}): ");
                 string input = Console.ReadLine();
-
-                if (!string.IsNullOrWhiteSpace(input))
-                {
-                    // Tạm chấp nhận input là IP hoặc domain
-                    CURRENT_SERVER_IP = input.Trim();
-                }
-                else
-                {
-                    CURRENT_SERVER_IP = DEFAULT_SERVER_HOST;
-                    Console.WriteLine($"[Config] No input provided. Using localhost.");
-                }
+                serverHost = string.IsNullOrWhiteSpace(input) ? DEFAULT_SERVER_HOST : input.Trim();
             }
 
+            // Xử lý URL động
+            if (serverHost.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || 
+                serverHost.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                SERVER_URL_FINAL = serverHost.TrimEnd('/') + "/agenthub";
+                try {
+                    Uri uri = new Uri(serverHost);
+                    CURRENT_SERVER_IP = uri.Host;
+                } catch {
+                    CURRENT_SERVER_IP = serverHost;
+                }
+            }
+            else
+            {
+                CURRENT_SERVER_IP = serverHost;
+                SERVER_URL_FINAL = $"http://{CURRENT_SERVER_IP}:{SERVER_TCP_PORT}/agenthub";
+            }
+
+            // Lấy Agent ID
             if (args.Length > 1)
             {
-                AGENT_ID = args[0];
+                AGENT_ID = args[1];
                 Console.WriteLine($"[Config] Auto-detected Agent ID: {AGENT_ID}");
             }
-            // Trường hợp 2: Không có tham số -> Hỏi người dùng
             else
             {
                 Console.Write($"Enter AGENT_ID (Default: {DEFAULT_AGENT_ID}): ");
                 string input = Console.ReadLine();
-
-                if (!string.IsNullOrWhiteSpace(input))
-                {
-                    // Tạm chấp nhận input là IP hoặc domain
-                    AGENT_ID = input.Trim();
-                }
-                else
-                {
-                    AGENT_ID = DEFAULT_AGENT_ID;
-                    Console.WriteLine($"[Config] No input provided. Using ${DEFAULT_AGENT_ID}.");
-                }
+                AGENT_ID = string.IsNullOrWhiteSpace(input) ? DEFAULT_AGENT_ID : input.Trim();
             }
 
-
-            // Tạo chuỗi kết nối chuẩn
-            SERVER_URL_FINAL = $"http://{CURRENT_SERVER_IP}:{SERVER_TCP_PORT}/agenthub";
-            
             Console.WriteLine($"---------------------------------------------");
-            Console.WriteLine($"Target Server: {CURRENT_SERVER_IP}");
+            Console.WriteLine($"Target Server  : {CURRENT_SERVER_IP}");
             Console.WriteLine($"Websocket URL  : {SERVER_URL_FINAL}");
-            Console.WriteLine($"UDP Target   : {CURRENT_SERVER_IP}:{SERVER_UDP_PORT}");
+            Console.WriteLine($"UDP Target     : {CURRENT_SERVER_IP}:{SERVER_UDP_PORT}");
             Console.WriteLine($"---------------------------------------------");
 
             // --- BẮT ĐẦU KHỞI TẠO ---

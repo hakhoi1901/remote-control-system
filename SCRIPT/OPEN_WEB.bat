@@ -1,22 +1,27 @@
 @echo off
-title RCS CLIENT LAUNCHER
-color 0B
+title RCS WEB DASHBOARD
+color 0E
 
 echo ==============================================
-echo   KET NOI DASHBOARD DIEU KHIEN
+echo   CONNECTING TO RCS DASHBOARD
 echo ==============================================
 
-:INPUT_IP
-set SERVER_IP=
-set /p SERVER_IP=Nhap IP Server (Mac dinh = localhost): 
+:INPUT_URL
+set TARGET_URL=
+set /p TARGET_URL=Enter Server URL or IP (Default = localhost): 
 
-if "%SERVER_IP%"=="" set SERVER_IP=127.0.0.1
+if "%TARGET_URL%"=="" set TARGET_URL=http://localhost:5000
 
-set PORT=5000
+:: Check if it's just an IP/Hostname (doesn't start with http)
+echo %TARGET_URL% | findstr /I "http" >nul
+if %ERRORLEVEL% neq 0 (
+    :: If no http, assume it's an IP and add http:// + port 5000
+    set TARGET_URL=http://%TARGET_URL%:5000
+)
 
 echo.
-echo [INFO] Dang ket noi toi: http://%SERVER_IP%:%PORT%
+echo [INFO] Connecting to: %TARGET_URL%
+echo.
 
-start http://%SERVER_IP%:%PORT%
-
-exit
+start "" "%TARGET_URL%"
+pause

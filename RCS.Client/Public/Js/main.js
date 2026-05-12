@@ -979,8 +979,15 @@ function doLogin(username, password) {
     const ipInput = document.getElementById("server-ip").value.trim(); 
     
     // Nếu để trống thì mặc định localhost
-    const serverIp = ipInput || "localhost";
-    const dynamicUrl = `http://${serverIp}:5000/clienthub`;
+    let serverIp = ipInput || window.location.hostname;
+    let dynamicUrl;
+
+    if (serverIp.startsWith("http://") || serverIp.startsWith("https://")) {
+        dynamicUrl = serverIp.trimEnd('/') + "/clienthub";
+    } else {
+        // Nếu là IP/localhost thuần túy
+        dynamicUrl = `http://${serverIp}:5000/clienthub`;
+    }
 
     btnText.textContent = "Đang xác thực...";
     btnLoader.classList.remove('hidden');
